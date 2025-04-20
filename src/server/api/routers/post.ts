@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { posts, notes } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { notes, posts } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
 
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
@@ -32,7 +32,6 @@ export const postRouter = createTRPCRouter({
   createNote: publicProcedure.input(z.object({
     note_name: z.string(),
   })).mutation(async ({ ctx, input }) => {
-
     if (!ctx.auth.userId) {
       throw new TRPCError({
         code: "UNAUTHORIZED",

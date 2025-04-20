@@ -1,16 +1,22 @@
 "use client";
-import { z } from "zod";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormMessage, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardDescription } from "@/components/ui/card";
-import { useState } from "react";
-import { DialogClose } from "@radix-ui/react-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { useAddNote } from "@/utils/queries";
-
+import { zodResolver } from "@hookform/resolvers/zod";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 export const AddNote = ({ refetch }: {
   refetch: () => void;
@@ -22,7 +28,7 @@ export const AddNote = ({ refetch }: {
     },
     onSuccess: () => {
       refetch();
-    }
+    },
   });
 
   const formSchema = z.object({
@@ -43,7 +49,7 @@ export const AddNote = ({ refetch }: {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen} >
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogClose className="absolute top-2 right-2" />
       <DialogTrigger onClick={() => setIsOpen(true)}>
         <Card>
@@ -80,4 +86,4 @@ export const AddNote = ({ refetch }: {
       </DialogContent>
     </Dialog>
   );
-}
+};

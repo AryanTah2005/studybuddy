@@ -3,8 +3,8 @@ import "@/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
-import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
+import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "Notes App",
@@ -17,12 +17,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <Providers>
-    <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
-        <Navbar />
-        {children}
-      </body>
-    </html>
+      <html lang="en" className={`${GeistSans.variable}`}>
+        <body>
+          <Navbar />
+          {children}
+        </body>
+      </html>
     </Providers>
   );
 }
