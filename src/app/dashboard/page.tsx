@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react"; // Top of your file
 import { ChatBot } from "@/components/ChatBot";
 import { CourseList } from "@/components/CourseList";
 import TestReview from "@/components/test_review";
@@ -33,6 +34,7 @@ interface Course {
 }
 
 export default function Dashboard() {
+
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isNewCourseOpen, setIsNewCourseOpen] = useState(false);
@@ -54,7 +56,6 @@ export default function Dashboard() {
     { id: "2", text: "Complete physics homework", completed: false },
   ]);
   const [events, setEvents] = useState<Record<string, Event[]>>({});
-
   const handleAddCourse = () => {
     if (!newCourseName.trim() || !newCourseDescription.trim()) return;
     const newCourse = { id: Math.random().toString(), name: newCourseName, description: newCourseDescription };
@@ -63,6 +64,48 @@ export default function Dashboard() {
     setNewCourseName("");
     setNewCourseDescription("");
   };
+  useEffect(() => {
+	// Only fire if at least one link is set
+	if ((!googleLink || googleLink.trim() === "") && (!canvasLink || canvasLink.trim() === "")) {
+	  return;
+	}
+  
+	const fetchEvents = async () => {
+	  try {
+		const res = await fetch("/api/fetchIcs", {
+		  method: "POST",
+		  headers: { "Content-Type": "application/json" },
+		  body: JSON.stringify({ google: googleLink, canvas: canvasLink }),
+		});
+		if (!res.ok) {
+		  const text = await res.text();
+		  throw new Error("Server error: " + text);
+		}
+		// After fetching:
+const data = await res.json();
+
+// Build event date mapping like: { "2024-06-12": [event, ...], ... }
+const byDate: Record<string, Event[]> = {};
+for (const event of data.events) {
+  // Use the ICS event's time to extract just the date
+  const iso = event.time; // "2024-06-12T14:00:00Z"
+  const dateKey = iso.split("T")[0]; // "2024-06-12"
+  const timePart = iso.split("T")[1]?.slice(0,5) ?? ""; // "14:00" (first 5 chars of time)
+  if (!byDate[dateKey]) byDate[dateKey] = [];
+  byDate[dateKey].push({
+    id: event.id,
+    title: event.title,
+    time: timePart, // Store just the "HH:MM"
+  });
+}
+setEvents(byDate);
+	  } catch (error) {
+		console.error("Failed to fetch/parsing events:", error);
+	  }
+	};
+  
+	fetchEvents();
+  }, [googleLink, canvasLink]);
 
   const handleAddTodo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,9 +148,6 @@ export default function Dashboard() {
   });
 
   const saveSettings = () => {
-    // persist settings here (e.g., localStorage)
-    console.log("Saved Google Calendar:", googleLink);
-    console.log("Saved Canvas Link:", canvasLink);
     setIsSettingsOpen(false);
   };
 
@@ -149,11 +189,11 @@ export default function Dashboard() {
                     <h3 className="font-semibold">Events for {date?.toLocaleDateString()}</h3>
                   </div>
                   <div className="space-y-2">
-                    {selectedDateEvents.map(event => (
-                      <div key={event.id} className="flex items-center justify-between bg-muted p-2 rounded">
-                        <span>{event.time} - {event.title}</span>
-                      </div>
-                    ))}
+				  {selectedDateEvents.map(event => (
+  <div key={event.id}>
+    <span>{event.time} - {event.title}</span>
+  </div>
+))}
                   </div>
                 </div>
               </CardContent>
