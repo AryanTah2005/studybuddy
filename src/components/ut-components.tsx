@@ -9,7 +9,7 @@ export const UploadDropzone = generateUploadDropzone<OurFileRouter>();
 export const CourseMaterialUploadButton = ({ courseId }: {
   courseId: string;
 }) => (
-  <UploadButton
+  <UploadDropzone
     endpoint="studyMaterial"
     onBeforeUploadBegin={(file) => {
       return file.map((f) => {
