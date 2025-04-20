@@ -177,9 +177,9 @@ export default function Dashboard() {
                   </div>
                   <div className="space-y-2">
   {selectedDateEvents.length === 0 ? (
-    <div className="bg-gray-100 text-gray-500 py-2 px-4 rounded text-center">
-      No events for the day
-    </div>
+    <div className="bg-gray-100 text-gray-500 py-2 px-4 rounded text-center font-bold">
+	Your schedule’s taking the day off 💤
+  </div>  
   ) : (
     selectedDateEvents.map(event => (
       <div
