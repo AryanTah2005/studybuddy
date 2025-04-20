@@ -1,97 +1,41 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { notes, posts } from "@/server/db/schema";
-import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { courses } from "@/server/db/schema";
+import { sql } from "drizzle-orm";
 
-export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
-  create: publicProcedure
-    .input(z.object({ name: z.string().min(1) }))
+export const courseRouter = createTRPCRouter({
+  addCourse: publicProcedure
+    .input(z.object({
+      course_name: z.string().nonempty(),
+      course_desc: z.string().nonempty(),
+    }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(posts).values({
-        name: input.name,
+      await ctx.db.insert(courses).values({
+        course_name: input.course_name,
+        course_desc: input.course_desc,
+        user_id: ctx.auth.userId,
       });
     }),
 
-  getLatest: publicProcedure.query(async ({ ctx }) => {
-    const post = await ctx.db.query.posts.findFirst({
-      orderBy: (posts, { desc }) => [desc(posts.createdAt)],
-    });
+  getCourses: publicProcedure.query(async ({ ctx }) => {
+    const coursesList = await ctx.db.select({
+      course_name: courses.course_name,
+      course_desc: courses.course_desc,
+      course_id: courses.course_id,
+    }).from(courses).where(sql`${courses.user_id} = ${ctx.auth.userId}`);
 
-    return post ?? null;
+    return coursesList;
   }),
-  createNote: publicProcedure.input(z.object({
-    note_name: z.string(),
+  dropCourse: publicProcedure.input(z.object({
+    course_id: z.string().uuid(),
   })).mutation(async ({ ctx, input }) => {
-    if (!ctx.auth.userId) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "User not authenticated",
-      });
-    }
+    const course = await ctx.db.select({
+      course_id: courses.course_id,
+    })
+      .from(courses)
+      .where(sql`${courses.user_id} = ${ctx.auth.userId} AND ${courses.course_id} = ${input.course_id}`);
 
-    await ctx.db.insert(notes).values({
-      note_name: input.note_name,
-      userId: ctx.auth.userId,
-    });
-
-    return {
-      message: "Note created",
-    };
-  }),
-  fetchNotes: publicProcedure.query(async ({ ctx }) => {
-    if (!ctx.auth.userId) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "User not authenticated",
-      });
-    }
-    const currentNotes = await ctx.db.select()
-      .from(notes)
-      .where(eq(notes.userId, ctx.auth.userId));
-
-    console.log(currentNotes);
-
-    return currentNotes;
-  }),
-  deleteNote: publicProcedure.input(z.object({
-    noteId: z.string(),
-  })).mutation(async ({ ctx, input }) => {
-    try {
-      await ctx.db.delete(notes).where(eq(notes.note_id, input.noteId));
-      return {
-        message: "Note deleted",
-      };
-    } catch (e) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to delete note",
-      });
-    }
-  }),
-  fetchFullNote: publicProcedure.input(z.object({
-    noteId: z.string(),
-  })).mutation(async ({ ctx, input }) => {
-    const note = await ctx.db.query.notes.findFirst({
-      where: eq(notes.note_id, input.noteId),
-    });
-
-    if (note?.userId !== ctx.auth.userId) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "User not authenticated",
-      });
-    }
-
-    return note;
+    await ctx.db.delete(courses).where(sql`${courses.course_id} = ${input.course_id}`);
   }),
 });

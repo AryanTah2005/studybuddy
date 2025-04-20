@@ -2,7 +2,7 @@
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
 import { sql } from "drizzle-orm";
-import { index, integer, json, pgTableCreator, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, index, integer, json, pgTableCreator, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -12,11 +12,13 @@ import { index, integer, json, pgTableCreator, text, timestamp, uuid, varchar } 
  */
 export const createTable = pgTableCreator((name) => `study_tool_${name}`);
 
-export const posts = createTable(
+export const todo = createTable(
   "todo",
   {
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
     title: varchar("title", { length: 256 }),
+    done: boolean("done").default(false),
+    user_id: varchar("user_id", { length: 256 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -29,13 +31,13 @@ export const posts = createTable(
   }),
 );
 
-export const notes = createTable(
+export const courses = createTable(
   "course",
   {
     record_id: integer("record_id").primaryKey().generatedByDefaultAsIdentity(),
-    note_id: uuid("course_id").notNull().defaultRandom(),
-    note_name: varchar("course_name", { length: 256 }),
-    note_content: text("course_desc").default(sql`''`),
+    course_id: uuid("course_id").notNull().defaultRandom(),
+    course_name: varchar("course_name", { length: 256 }),
+    course_desc: text("course_desc").default(sql`''`),
     user_id: varchar("user_id", { length: 256 }),
     uploaded_files: json("uploaded_files").default(sql`'[]'`),
     uploaded_files_count: integer("uploaded_files_count").default(0),
