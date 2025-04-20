@@ -25,7 +25,9 @@ export default function RootLayout({
           />
           {/* rest of your scripts go under */}
         </head>
-        <body>
+        <body
+          suppressHydrationWarning
+        >
           <Navbar />
           {children}
         </body>

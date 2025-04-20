@@ -176,37 +176,40 @@ export default function Dashboard() {
                     <h3 className="font-semibold">Events for {date?.toLocaleDateString()}</h3>
                   </div>
                   <div className="space-y-2">
-  {selectedDateEvents.length === 0 ? (
-    <div className="bg-gray-100 text-gray-500 py-2 px-4 rounded text-center font-bold">
-	Your schedule’s taking the day off 💤
-  </div>  
-  ) : (
-    selectedDateEvents.map(event => (
-      <div
-        key={event.id}
-        className={`
+                    {selectedDateEvents.length === 0
+                      ? (
+                        <div className="bg-gray-100 text-gray-500 py-2 px-4 rounded text-center font-bold">
+                          Your schedule’s taking the day off 💤
+                        </div>
+                      )
+                      : (
+                        selectedDateEvents.map(event => (
+                          <div
+                            key={event.id}
+                            className={`
           flex items-center justify-between p-2 rounded
-          ${event.source === 'canvas'
-            ? 'bg-red-100 text-red-700'
-            : event.source === 'google'
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-muted'
-          }
+          ${
+                              event.source === "canvas"
+                                ? "bg-red-100 text-red-700"
+                                : event.source === "google"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-muted"
+                            }
         `}
-      >
-        <span>
-          <span className="font-bold">{event.time}</span> - {event.title}
-          {event.source === "canvas" && (
-            <span className="ml-2 text-xs text-red-500">(Canvas)</span>
-          )}
-          {event.source === "google" && (
-            <span className="ml-2 text-xs text-blue-500">(Google)</span>
-          )}
-        </span>
-      </div>
-    ))
-  )}
-</div>
+                          >
+                            <span>
+                              <span className="font-bold">{event.time}</span> - {event.title}
+                              {event.source === "canvas" && <span className="ml-2 text-xs text-red-500">(Canvas)</span>}
+                              {event.source === "google" && (
+                                <span className="ml-2 text-xs text-blue-500">
+                                  (Google)
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
