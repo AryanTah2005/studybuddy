@@ -9,8 +9,6 @@ export const Navbar = () => {
     <nav className="p-4 ">
       <ul className="flex justify-end *:px-10">
         <li>
-          {!user && <SignInButton />}
-          <UserButton />
         </li>
       </ul>
     </nav>

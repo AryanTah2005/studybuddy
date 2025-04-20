@@ -1,13 +1,8 @@
+import { api } from "@/trpc/react";
 import React, { useState } from "react";
 import { Button } from "./ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
-import { api } from "@/trpc/react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Separator } from "./ui/separator";
 
 const MAX_PROGRESS = 90; // leave last 10% for final step
 
@@ -20,21 +15,18 @@ const TestReview = () => {
   const [progress, setProgress] = useState<number>(0);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { data: courses, isLoading: loadingCourses } =
-    api.course.getCourses.useQuery();
+  const { data: courses, isLoading: loadingCourses } = api.course.getCourses.useQuery();
   const {
     data: courseFiles,
     isLoading: loadingFiles,
     refetch: fetchFiles,
   } = api.files.getCourseFiles.useQuery(
     { course_id: selectedCourse },
-    { enabled: false }
+    { enabled: false },
   );
 
   const handleFileCheck = (fileUrl: string, checked: boolean) => {
-    setSelectedFileUrls((prev) =>
-      checked ? [...prev, fileUrl] : prev.filter((url) => url !== fileUrl)
-    );
+    setSelectedFileUrls((prev) => checked ? [...prev, fileUrl] : prev.filter((url) => url !== fileUrl));
   };
 
   const resetProgress = () => setProgress(0);
@@ -126,9 +118,11 @@ const TestReview = () => {
   };
 
   return (
-    <div className="w-full max-w-xl p-6 bg-white border rounded-lg shadow-md mx-auto relative">
-      <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">Generate Study Material PDF</h2>
-      {/* STEP 1: Select Course & Content Type */}
+    <div className="">
+      <h2 className=" mb-2 text-xl font-bold text-left">Step 1: Add Course and Content Type</h2>
+      <p className="mb-4 text-md text-gray-500">
+        Select a course and content type to generate study materials.
+      </p>
       <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -139,24 +133,28 @@ const TestReview = () => {
               <SelectValue placeholder="Choose course..." />
             </SelectTrigger>
             <SelectContent>
-              {loadingCourses ? (
-                <SelectItem disabled value="loading">
-                  Loading Courses…
-                </SelectItem>
-              ) : courses && courses.length > 0 ? (
-                courses.map((course) => (
-                  <SelectItem
-                    key={course.course_id}
-                    value={course.course_id || ""}
-                  >
-                    {course.course_name || "Unnamed Course"}
+              {loadingCourses
+                ? (
+                  <SelectItem disabled value="loading">
+                    Loading Courses…
                   </SelectItem>
-                ))
-              ) : (
-                <SelectItem disabled value="no-courses">
-                  No courses available
-                </SelectItem>
-              )}
+                )
+                : courses && courses.length > 0
+                ? (
+                  courses.map((course) => (
+                    <SelectItem
+                      key={course.course_id}
+                      value={course.course_id || ""}
+                    >
+                      {course.course_name || "Unnamed Course"}
+                    </SelectItem>
+                  ))
+                )
+                : (
+                  <SelectItem disabled value="no-courses">
+                    No courses available
+                  </SelectItem>
+                )}
             </SelectContent>
           </Select>
         </div>
@@ -187,46 +185,57 @@ const TestReview = () => {
       >
         {loadingFiles ? "Loading files..." : "Show Files"}
       </Button>
-
-      {/* STEP 2: Choose Files */}
-      {showFiles && (
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Files ({selectedFileUrls.length} selected)
-          </label>
+      <Separator className="my-12" />
+      <h3 className="mb-2 text-xl font-bold text-left">
+        Step 2: Select Files to Include
+      </h3>
+      <p className="mb-4 text-md text-gray-500">
+        Choose files to include in the generated study material.
+      </p>
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Select Files ({selectedFileUrls.length} selected)
+        </label>
+        {showFiles && (
           <div className="bg-gray-50 border rounded p-2 max-h-44 overflow-y-auto">
-            {courseFiles && courseFiles.length > 0 ? (
-              courseFiles.map((file) => (
-                <label
-                  key={file.file_url}
-                  className="flex items-center gap-2 py-1 pl-1 cursor-pointer hover:bg-gray-100 rounded transition"
-                >
-                  <input
-                    type="checkbox"
-                    value={file.file_url}
-                    checked={selectedFileUrls.includes(file.file_url)}
-                    onChange={e =>
-                      handleFileCheck(file.file_url, e.target.checked)
-                    }
-                  />
-                  <span className="truncate">
-                    {file.file_name?.split("-_-name-_-")[1]}
-                  </span>
-                  <span className="ml-auto text-xs text-gray-400 w-16 text-right">
-                    {((file.file_size / 1024) | 0)} KB
-                  </span>
-                </label>
-              ))
-            ) : (
-              <div className="text-sm text-gray-400 px-2 py-2">
-                No files found for this course.
-              </div>
-            )}
+            {courseFiles && courseFiles.length > 0
+              ? (
+                courseFiles.map((file) => (
+                  <label
+                    key={file.file_url}
+                    className="flex items-center gap-2 py-1 pl-1 cursor-pointer hover:bg-gray-100 rounded transition"
+                  >
+                    <input
+                      type="checkbox"
+                      value={file.file_url}
+                      checked={selectedFileUrls.includes(file.file_url)}
+                      onChange={e => handleFileCheck(file.file_url, e.target.checked)}
+                    />
+                    <span className="truncate">
+                      {file.file_name?.split("-_-name-_-")[1]}
+                    </span>
+                    <span className="ml-auto text-xs text-gray-400 w-16 text-right">
+                      {(file.file_size / 1024) | 0} KB
+                    </span>
+                  </label>
+                ))
+              )
+              : (
+                <div className="text-sm text-gray-400 px-2 py-2">
+                  No files found for this course.
+                </div>
+              )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
+      <Separator className="my-12" />
 
-      {/* STEP 3: Download Button and Progress */}
+      <h2 className="mb-2 text-xl font-bold text-left">
+        Step 3: Generate and Download File
+      </h2>
+      <p className="mb-4 text-md text-gray-500">
+        Click the button below to generate and download the study material.
+      </p>
       <Button
         className="w-full mb-2"
         disabled={isGenerating || !selectedFileUrls.length}
@@ -241,13 +250,14 @@ const TestReview = () => {
             <div
               style={{ width: `${progress}%` }}
               className="bg-blue-500 h-2 transition-all"
-            ></div>
+            >
+            </div>
           </div>
           <div className="text-center text-sm text-gray-500 mt-1">
-  {progress < 100
-    ? `Processing... (${progress}%)`
-    : "Done! Downloading..."}
-</div>
+            {progress < 100
+              ? `Processing... (${progress}%)`
+              : "Done! Downloading..."}
+          </div>
         </div>
       )}
 
@@ -255,9 +265,7 @@ const TestReview = () => {
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
           <div className="bg-white rounded-lg shadow-lg px-8 py-6 flex flex-col items-center animate-fadeIn">
-            <span
-              className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-green-100 mb-3"
-            >
+            <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-green-100 mb-3">
               <svg
                 className="w-8 h-8 text-green-500"
                 fill="none"

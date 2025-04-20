@@ -5,6 +5,20 @@ import { courses } from "@/server/db/schema";
 import { sql } from "drizzle-orm";
 
 export const courseRouter = createTRPCRouter({
+  getCourseById: publicProcedure.input(z.object({
+    course_id: z.string().uuid(),
+  }))
+    .query(async ({ ctx, input }) => {
+      const course = await ctx.db.select({
+        course_name: courses.course_name,
+        course_desc: courses.course_desc,
+        course_id: courses.course_id,
+      })
+        .from(courses)
+        .where(sql`${courses.user_id} = ${ctx.auth.userId} AND ${courses.course_id} = ${input.course_id}`);
+
+      return course[0];
+    }),
   addCourse: publicProcedure
     .input(z.object({
       course_name: z.string().nonempty(),

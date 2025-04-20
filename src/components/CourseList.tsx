@@ -44,12 +44,6 @@ const CourseCard = ({ course }: { course: Course }) => {
     dropCourse.mutate({ course_id: course.course_id });
   };
 
-  const handleArchiveCourse = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
-    e.stopPropagation();
-    if (!course.course_id) return;
-    console.log(`Archive course with ID: ${course.course_id}`);
-  };
-
   return (
     <Card className="w-full h-52 flex flex-col justify-between shadow-none group/card">
       <CardHeader className="flex items-end">
@@ -57,10 +51,6 @@ const CourseCard = ({ course }: { course: Course }) => {
           <Trash
             className=" h-5 w-5 text-gray-500 cursor-pointer group-hover/card:opacity-100 opacity-0 transition-all ease-in-out"
             onClick={handleDropCourse}
-          />
-          <Archive
-            className=" h-5 w-5 text-gray-500 cursor-pointer group-hover/card:opacity-100 opacity-0 transition-all ease-in-out"
-            onClick={handleArchiveCourse}
           />
         </div>
       </CardHeader>
