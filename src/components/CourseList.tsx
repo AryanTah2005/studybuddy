@@ -1,6 +1,7 @@
 import { api } from "@/trpc/react";
 import { Archive, Trash } from "lucide-react";
 import Link from "next/link";
+import { AddNewCourse } from "./add-new-course";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
 interface Course {
@@ -88,6 +89,7 @@ export function CourseList() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {courseList.map((course) => <CourseCard key={course.course_id} course={course} />)}
+      <AddNewCourse />
     </div>
   );
 }
