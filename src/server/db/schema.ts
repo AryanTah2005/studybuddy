@@ -54,3 +54,22 @@ export const courses = createTable(
     ),
   },
 );
+
+export const files = createTable(
+  "files",
+  {
+    record_id: integer("record_id").primaryKey().generatedByDefaultAsIdentity(),
+    file_id: uuid("file_id").notNull().defaultRandom(),
+    user_id: varchar("user_id", { length: 256 }),
+    course_id: uuid("course_id").notNull(),
+    file_name: varchar("file_name", { length: 256 }),
+    file_size: integer("file_size"),
+    file_url: text("file_url"),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date(),
+    ),
+  },
+);

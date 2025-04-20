@@ -17,7 +17,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <Providers>
-      <html lang="en" className={`${GeistSans.variable}`}>
+      <html suppressHydrationWarning lang="en" className={`${GeistSans.variable}`}>
         <head>
           <script
             crossOrigin="anonymous"
