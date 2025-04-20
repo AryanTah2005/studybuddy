@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -77,26 +76,6 @@ export default function Home() {
     setNewCourseDescription("");
   };
 
-  const handleAddEvent = () => {
-    if (!date || !newEventTitle || !newEventTime) return;
-
-    const dateStr = date.toISOString().split("T")[0];
-    const newEvent = {
-      id: Math.random().toString(),
-      title: newEventTitle,
-      time: newEventTime,
-    };
-
-    setEvents(prev => ({
-      ...prev,
-      [dateStr]: [...(prev[dateStr] || []), newEvent],
-    }));
-
-    setNewEventTitle("");
-    setNewEventTime("");
-    setIsNewEventOpen(false);
-  };
-
   const handleAddTodo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTodo.trim()) return;
@@ -126,7 +105,6 @@ export default function Home() {
     setTodos((prev) => prev.filter((todo) => todo.id !== id));
   };
 
-  const selectedDateStr = date?.toISOString().split("T")[0];
   const selectedDateStr = date?.toISOString().split("T")[0];
   const selectedDateEvents = selectedDateStr ? events[selectedDateStr] || [] : [];
   const pendingTodos = todos.filter((todo) => !todo.completed);
