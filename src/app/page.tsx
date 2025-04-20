@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { MessageCircle, Plus, X } from "lucide-react";
 import { useState } from "react";
+import TestReview from "@/components/test_review";
 
 interface Todo {
   id: string;
@@ -112,8 +113,9 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Courses list can shrink */}
-          <div className="md:col-span-2 min-w-0">
+          <div className="md:col-span-2 min-w-0 flex flex-col space-y-6">
             <CourseList courses={courses} />
+            <TestReview />
           </div>
 
           {/* Calendar + To‑Do column can shrink */}
