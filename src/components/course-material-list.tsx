@@ -34,8 +34,6 @@ export default function CourseMaterialList({
           <span className="text-gray-500">{file.file_size} bytes</span>
         </div>
       ))}
-
-      }
     </div>
   );
 }
