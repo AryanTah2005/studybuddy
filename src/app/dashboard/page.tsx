@@ -275,7 +275,12 @@ export default function Dashboard() {
               <label htmlFor="google-link" className="block text-sm font-medium text-gray-700 mb-2">
                 Google Calendar Link
               </label>
-              <Input id="google-link" value={googleLink} onChange={e => setGoogleLink(e.target.value)} placeholder="https://calendar.google.com/calendar/ical/..." />
+              <Input
+                id="google-link"
+                value={googleLink}
+                onChange={e => setGoogleLink(e.target.value)}
+                placeholder="https://calendar.google.com/calendar/ical/..."
+              />
             </div>
             <div>
               <label htmlFor="canvas-link" className="block text-sm font-medium text-gray-700 mb-2">Canvas Link</label>
