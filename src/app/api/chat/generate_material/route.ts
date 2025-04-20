@@ -1,7 +1,7 @@
 export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import fetch from "node-fetch"; // For server-side HTTP
+import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const PDFCO_KEY = process.env.PDFCO_API_KEY!; // Add your key to .env as PDFCO_API_KEY
@@ -15,8 +15,8 @@ async function extractTextFromPdf(pdfUrl: string): Promise<string> {
   const payload = {
     url: pdfUrl,
     inline: true,
-    pages: "",      // empty = all pages
-    async: false,   // wait for the result
+    pages: "", // empty = all pages
+    async: false, // wait for the result
   };
 
   const res = await fetch(apiUrl, {
@@ -31,7 +31,7 @@ async function extractTextFromPdf(pdfUrl: string): Promise<string> {
   const data = await res.json();
   if (!data?.body) {
     throw new Error(
-      `PDF.co failed: ${data.message || JSON.stringify(data)}`
+      `PDF.co failed: ${data.message || JSON.stringify(data)}`,
     );
   }
   return data.body;
@@ -53,7 +53,8 @@ export async function POST(req: NextRequest) {
     }
     const truncatedText = allText.slice(0, 4000);
 
-    const prompt = `Create a ${contentType} in LaTeX for the course: "${course}" from this material. Only output LaTeX.\n\n${truncatedText}`;
+    const prompt =
+      `Create a ${contentType} in LaTeX for the course: "${course}" from this material. Only output LaTeX.\n\n${truncatedText}`;
 
     const chat = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
     console.error("API ERROR:", error);
     return NextResponse.json(
       { error: "Server Error: " + (error as Error).message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

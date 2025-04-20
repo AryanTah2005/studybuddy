@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react"; // Top of your file
 import { ChatBot } from "@/components/ChatBot";
 import { CourseList } from "@/components/CourseList";
 import TestReview from "@/components/test_review";
@@ -10,9 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { api } from "@/trpc/react";
-import { HydrateClient } from "@/trpc/server";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SignInButton, UserButton, UserProfile } from "@clerk/nextjs";
 import { MessageCircle, Settings, X } from "lucide-react";
+import { useEffect } from "react"; // Top of your file
 import { useState } from "react";
 
 interface Todo {
@@ -35,80 +35,62 @@ interface Course {
 }
 
 export default function Dashboard() {
-
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isNewCourseOpen, setIsNewCourseOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const [newCourseName, setNewCourseName] = useState("");
-  const [newCourseDescription, setNewCourseDescription] = useState("");
   const [newTodo, setNewTodo] = useState("");
 
   const [googleLink, setGoogleLink] = useState("");
   const [canvasLink, setCanvasLink] = useState("");
 
-  const [courses, setCourses] = useState<Course[]>([
-    { id: "1", name: "Mathematics", description: "Advanced Calculus and Linear Algebra" },
-    { id: "2", name: "Physics", description: "Quantum Mechanics Fundamentals" },
-  ]);
   const [todos, setTodos] = useState<Todo[]>([
     { id: "1", text: "Review calculus notes", completed: false },
     { id: "2", text: "Complete physics homework", completed: false },
   ]);
   const [events, setEvents] = useState<Record<string, Event[]>>({});
-  const handleAddCourse = () => {
-    if (!newCourseName.trim() || !newCourseDescription.trim()) return;
-    const newCourse = { id: Math.random().toString(), name: newCourseName, description: newCourseDescription };
-    setCourses(prev => [...prev, newCourse]);
-    setIsNewCourseOpen(false);
-    setNewCourseName("");
-    setNewCourseDescription("");
-  };
   useEffect(() => {
-	// Only fire if at least one link is set
-	if ((!googleLink || googleLink.trim() === "") && (!canvasLink || canvasLink.trim() === "")) {
-	  return;
-	}
-  
-	const fetchEvents = async () => {
-	  try {
-		const res = await fetch("/api/fetchIcs", {
-		  method: "POST",
-		  headers: { "Content-Type": "application/json" },
-		  body: JSON.stringify({ google: googleLink, canvas: canvasLink }),
-		});
-		if (!res.ok) {
-		  const text = await res.text();
-		  throw new Error("Server error: " + text);
-		}
-  
-		// After fetching:
-		const data = await res.json();
-  
-		// Build event date mapping like: { "2024-06-12": [event, ...], ... }
-		const byDate: Record<string, Event[]> = {};
-		for (const event of data.events) {
-		  const iso = event.time;
-		  const dateKey = iso.split("T")[0];
-		  const timeObj = new Date(iso);
-		  const timePart = timeObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }); // "hh:mm AM/PM"
-		  if (!byDate[dateKey]) byDate[dateKey] = [];
-		  byDate[dateKey].push({
-			id: event.id,
-			title: event.title,
-			time: timePart,        // formatted "hh:mm AM/PM"
-			source: event.source,  // keep source info!
-		  });
-		}
-		setEvents(byDate);
-  
-	  } catch (error) {
-		console.error("Failed to fetch/parsing events:", error);
-	  }
-	};
-  
-	fetchEvents();
+    if ((!googleLink || googleLink.trim() === "") && (!canvasLink || canvasLink.trim() === "")) {
+      return;
+    }
+
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch("/api/fetchIcs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ google: googleLink, canvas: canvasLink }),
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error("Server error: " + text);
+        }
+
+        // After fetching:
+        const data = await res.json();
+
+        // Build event date mapping like: { "2024-06-12": [event, ...], ... }
+        const byDate: Record<string, Event[]> = {};
+        for (const event of data.events) {
+          const iso = event.time;
+          const dateKey = iso.split("T")[0];
+          const timeObj = new Date(iso);
+          const timePart = timeObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }); // "hh:mm AM/PM"
+          if (!byDate[dateKey]) byDate[dateKey] = [];
+          byDate[dateKey].push({
+            id: event.id,
+            title: event.title,
+            time: timePart, // formatted "hh:mm AM/PM"
+            source: event.source, // keep source info!
+          });
+        }
+        setEvents(byDate);
+      } catch (error) {
+        console.error("Failed to fetch/parsing events:", error);
+      }
+    };
+
+    fetchEvents();
   }, [googleLink, canvasLink]);
   const handleAddTodo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,26 +111,6 @@ export default function Dashboard() {
   const selectedDateEvents = selectedDateStr ? events[selectedDateStr] || [] : [];
   const pendingTodos = todos.filter(todo => !todo.completed);
   const completedTodos = todos.filter(todo => todo.completed);
-  const utils = api.useUtils();
-  const addNewCourse = api.course.addCourse.useMutation({
-    onMutate: (opts) => {
-      utils.course.getCourses.cancel();
-      const previousCourses = utils.course.getCourses.getData();
-
-      if (previousCourses) {
-        const newCourse = {
-          course_id: opts.course_name,
-          course_name: opts.course_name,
-          course_desc: opts.course_desc,
-        };
-        utils.course.getCourses.setData(undefined, [...previousCourses, newCourse]);
-      }
-      return { previousCourses };
-    },
-    onSuccess: async (opts) => {
-      await utils.course.getCourses.invalidate();
-    },
-  });
 
   const saveSettings = () => {
     setIsSettingsOpen(false);
@@ -158,14 +120,36 @@ export default function Dashboard() {
     <main className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-primary">Study Planner</h1>
-          <Button onClick={() => setIsNewCourseOpen(true)}>Add New Course</Button>
+          <span className="flex items-end gap-2">
+            <h1 className="text-4xl font-bold text-primary">StudyBuddy</h1>
+            <p className="text-gray-500">Your personal study assistant</p>
+          </span>
+          <UserButton />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 min-w-0">
-            <CourseList courses={courses} />
-            <TestReview />
+            <Tabs defaultValue="course-list" className="w-full">
+              <TabsList className=" w-full grid grid-cols-2 mb-12">
+                <TabsTrigger value="course-list" className="w-full text-center">
+                  Course List
+                </TabsTrigger>
+                <TabsTrigger value="test-review" className="w-full text-center">
+                  Test Review
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="test-review">
+                <div className="flex flex-col gap-6">
+                  <TestReview />
+                </div>
+              </TabsContent>
+              <TabsContent value="course-list">
+                <div className="flex flex-col gap-6">
+                  <h2 className="mb-6 text-2xl font-bold text-left text-gray-800 mt-12">Your Courses</h2>
+                  <CourseList />
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
 
           <div className="space-y-6 min-w-0">
@@ -192,26 +176,32 @@ export default function Dashboard() {
                     <h3 className="font-semibold">Events for {date?.toLocaleDateString()}</h3>
                   </div>
                   <div className="space-y-2">
-				  {selectedDateEvents.map(event => (
-  <div
-    key={event.id}
-    className={`
+                    {selectedDateEvents.map(event => (
+                      <div
+                        key={event.id}
+                        className={`
       flex items-center justify-between p-2 rounded
-      ${event.source === 'canvas'
-        ? 'bg-red-100 text-red-700'
-        : event.source === 'google'
-          ? 'bg-blue-100 text-blue-700'
-          : 'bg-muted'}
+      ${
+                          event.source === "canvas"
+                            ? "bg-red-100 text-red-700"
+                            : event.source === "google"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-muted"
+                        }
     `}
-  >
-   <span>
-  <span className="font-bold">{event.time}</span> - {event.title}
-  {/* optional source color tag */}
-  {event.source === 'canvas' ? <span className="ml-2 text-xs text-red-500">(Canvas)</span> : null}
-  {event.source === 'google' ? <span className="ml-2 text-xs text-blue-500">(Google)</span> : null}
-</span>
-  </div>
-))}
+                      >
+                        <span>
+                          <span className="font-bold">{event.time}</span> - {event.title}
+                          {/* optional source color tag */}
+                          {event.source === "canvas"
+                            ? <span className="ml-2 text-xs text-red-500">(Canvas)</span>
+                            : null}
+                          {event.source === "google"
+                            ? <span className="ml-2 text-xs text-blue-500">(Google)</span>
+                            : null}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </CardContent>
@@ -269,45 +259,6 @@ export default function Dashboard() {
       </Button>
 
       <ChatBot open={isChatOpen} onClose={() => setIsChatOpen(false)} />
-
-      {/* Dialog for adding new courses */}
-      <Dialog open={isNewCourseOpen} onOpenChange={setIsNewCourseOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Course</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="course-name" className="block text-sm font-medium text-gray-700">Course Name</label>
-              <Input
-                id="course-name"
-                value={newCourseName}
-                onChange={e => setNewCourseName(e.target.value)}
-                placeholder="e.g. Calculus I"
-              />
-            </div>
-            <div>
-              <label htmlFor="course-desc" className="block text-sm font-medium text-gray-700">Description</label>
-              <Input
-                id="course-desc"
-                value={newCourseDescription}
-                onChange={e => setNewCourseDescription(e.target.value)}
-                placeholder="Brief description"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                handleAddCourse();
-                addNewCourse.mutate({ course_name: newCourseName, course_desc: newCourseDescription });
-              }}
-            >
-              Add Course
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Settings Dialog */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>

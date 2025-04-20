@@ -42,8 +42,9 @@ export const AddNewCourse = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button className="w-full h-52" variant="secondary">
+          <Plus className=" h-5 w-5" />
+          Add Course
         </Button>
       </DialogTrigger>
       <DialogContent>
