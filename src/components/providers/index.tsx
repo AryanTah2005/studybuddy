@@ -1,7 +1,7 @@
-import {TRPCReactProvider} from '@/trpc/react';
-import { ClerkProvider } from '@clerk/nextjs';
+import { TRPCReactProvider } from "@/trpc/react";
+import { ClerkProvider } from "@clerk/nextjs";
 
-export const Providers= ({ children } : {
+export const Providers = ({ children }: {
   children: React.ReactNode;
 }) => {
   return (
@@ -9,4 +9,4 @@ export const Providers= ({ children } : {
       <TRPCReactProvider>{children}</TRPCReactProvider>
     </ClerkProvider>
   );
-}
+};

@@ -1,7 +1,6 @@
-
 import { createTRPCContext } from "@/server/api/trpc";
-import { NextRequest } from 'next/server';
 import { auth } from "@clerk/nextjs/server";
+import { NextRequest } from "next/server";
 
 export const createContext = async (req: NextRequest) => {
   return await createTRPCContext({

@@ -1,9 +1,13 @@
 "use client";
-import { Calendar } from "@/components/ui/calendar";
+
+import { ChatBot } from "@/components/ChatBot";
+import { CourseList } from "@/components/CourseList";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -13,8 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { MessageCircle, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { ChatBot } from "@/components/ChatBot";
-import { CourseList } from "@/components/CourseList";
 
 interface Todo {
   id: string;
@@ -75,9 +77,35 @@ export default function Home() {
     setNewCourseDescription("");
   };
 
+  const handleAddEvent = () => {
+    if (!date || !newEventTitle || !newEventTime) return;
+
+    const dateStr = date.toISOString().split("T")[0];
+    const newEvent = {
+      id: Math.random().toString(),
+      title: newEventTitle,
+      time: newEventTime,
+    };
+
+    setEvents(prev => ({
+      ...prev,
+      [dateStr]: [...(prev[dateStr] || []), newEvent],
+    }));
+
+    setNewEventTitle("");
+    setNewEventTime("");
+    setIsNewEventOpen(false);
+  };
+
   const handleAddTodo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTodo.trim()) return;
+
+    setTodos(prev => [...prev, {
+      id: Math.random().toString(),
+      text: newTodo,
+      completed: false,
+    }]);
     setTodos((prev) => [
       ...prev,
       { id: Math.random().toString(), text: newTodo, completed: false },
@@ -86,6 +114,7 @@ export default function Home() {
   };
 
   const toggleTodo = (id: string) => {
+    setTodos(prev => prev.map(todo => todo.id === id ? { ...todo, completed: !todo.completed } : todo));
     setTodos((prev) =>
       prev.map((todo) =>
         todo.id === id ? { ...todo, completed: !todo.completed } : todo
@@ -97,6 +126,7 @@ export default function Home() {
     setTodos((prev) => prev.filter((todo) => todo.id !== id));
   };
 
+  const selectedDateStr = date?.toISOString().split("T")[0];
   const selectedDateStr = date?.toISOString().split("T")[0];
   const selectedDateEvents = selectedDateStr ? events[selectedDateStr] || [] : [];
   const pendingTodos = todos.filter((todo) => !todo.completed);
@@ -267,3 +297,4 @@ export default function Home() {
     </main>
   );
 }
+

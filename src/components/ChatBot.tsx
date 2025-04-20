@@ -1,11 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
 import { Send } from "lucide-react";
+import { useState } from "react";
 
 interface ChatBotProps {
   open: boolean;
@@ -58,9 +58,7 @@ export function ChatBot({ open, onClose }: ChatBotProps) {
             {messages.map((message, i) => (
               <div
                 key={i}
-                className={`flex ${
-                  message.sender === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`rounded-lg px-4 py-2 max-w-[80%] ${
