@@ -1,3 +1,4 @@
+import { fileRouter } from "@/server/api/routers/files";
 import { courseRouter } from "@/server/api/routers/post";
 import { todoRouter } from "@/server/api/routers/todo";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
@@ -10,6 +11,7 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 export const appRouter = createTRPCRouter({
   course: courseRouter,
   todo: todoRouter,
+  files: fileRouter,
 });
 
 // export type definition of API
