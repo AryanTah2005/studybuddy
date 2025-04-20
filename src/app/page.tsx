@@ -6,14 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { MessageCircle, Plus, X } from "lucide-react";
 import { useState } from "react";
 
@@ -94,11 +88,7 @@ export default function Home() {
 
   const toggleTodo = (id: string) => {
     setTodos(prev => prev.map(todo => todo.id === id ? { ...todo, completed: !todo.completed } : todo));
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+    setTodos((prev) => prev.map((todo) => todo.id === id ? { ...todo, completed: !todo.completed } : todo));
   };
 
   const removeTodo = (id: string) => {
@@ -134,11 +124,11 @@ export default function Home() {
                 <CardTitle>Calendar</CardTitle>
               </CardHeader>
               <CardContent className="overflow-auto">
-			  <Calendar
-  mode="single"
-  selected={date}
-  onSelect={setDate}
-  className={`
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  className={`
     w-full
     rounded-md
     border
@@ -157,8 +147,7 @@ export default function Home() {
     [&_td]:p-2
     [&_td]:text-center
   `}
-/>
-
+                />
 
                 <div className="mt-4">
                   <div className="flex justify-between items-center mb-3">
@@ -275,4 +264,3 @@ export default function Home() {
     </main>
   );
 }
-
