@@ -25,6 +25,7 @@ interface Event {
   id: string;
   title: string;
   time: string;
+  source?: string;
 }
 
 interface Course {
@@ -81,24 +82,27 @@ export default function Dashboard() {
 		  const text = await res.text();
 		  throw new Error("Server error: " + text);
 		}
+  
 		// After fetching:
-const data = await res.json();
-
-// Build event date mapping like: { "2024-06-12": [event, ...], ... }
-const byDate: Record<string, Event[]> = {};
-for (const event of data.events) {
-  // Use the ICS event's time to extract just the date
-  const iso = event.time; // "2024-06-12T14:00:00Z"
-  const dateKey = iso.split("T")[0]; // "2024-06-12"
-  const timePart = iso.split("T")[1]?.slice(0,5) ?? ""; // "14:00" (first 5 chars of time)
-  if (!byDate[dateKey]) byDate[dateKey] = [];
-  byDate[dateKey].push({
-    id: event.id,
-    title: event.title,
-    time: timePart, // Store just the "HH:MM"
-  });
-}
-setEvents(byDate);
+		const data = await res.json();
+  
+		// Build event date mapping like: { "2024-06-12": [event, ...], ... }
+		const byDate: Record<string, Event[]> = {};
+		for (const event of data.events) {
+		  const iso = event.time;
+		  const dateKey = iso.split("T")[0];
+		  const timeObj = new Date(iso);
+		  const timePart = timeObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }); // "hh:mm AM/PM"
+		  if (!byDate[dateKey]) byDate[dateKey] = [];
+		  byDate[dateKey].push({
+			id: event.id,
+			title: event.title,
+			time: timePart,        // formatted "hh:mm AM/PM"
+			source: event.source,  // keep source info!
+		  });
+		}
+		setEvents(byDate);
+  
 	  } catch (error) {
 		console.error("Failed to fetch/parsing events:", error);
 	  }
@@ -106,7 +110,6 @@ setEvents(byDate);
   
 	fetchEvents();
   }, [googleLink, canvasLink]);
-
   const handleAddTodo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTodo.trim()) return;
@@ -166,10 +169,10 @@ setEvents(byDate);
           </div>
 
           <div className="space-y-6 min-w-0">
-            <Card className="w-full min-w-0 relative">
+            <Card className="w-full min-w-0 relative shadow-none">
               <CardHeader>
                 <div className="flex justify-between items-center w-full">
-                  <CardTitle>Calendar</CardTitle>
+                  <CardTitle className="text-2xl">Calendar</CardTitle>
                   <Button variant="ghost" onClick={() => setIsSettingsOpen(true)}>
                     <Settings className="h-5 w-5" />
                   </Button>
@@ -190,8 +193,23 @@ setEvents(byDate);
                   </div>
                   <div className="space-y-2">
 				  {selectedDateEvents.map(event => (
-  <div key={event.id}>
-    <span>{event.time} - {event.title}</span>
+  <div
+    key={event.id}
+    className={`
+      flex items-center justify-between p-2 rounded
+      ${event.source === 'canvas'
+        ? 'bg-red-100 text-red-700'
+        : event.source === 'google'
+          ? 'bg-blue-100 text-blue-700'
+          : 'bg-muted'}
+    `}
+  >
+   <span>
+  <span className="font-bold">{event.time}</span> - {event.title}
+  {/* optional source color tag */}
+  {event.source === 'canvas' ? <span className="ml-2 text-xs text-red-500">(Canvas)</span> : null}
+  {event.source === 'google' ? <span className="ml-2 text-xs text-blue-500">(Google)</span> : null}
+</span>
   </div>
 ))}
                   </div>
@@ -201,7 +219,7 @@ setEvents(byDate);
 
             <Card className="min-w-0">
               <CardHeader>
-                <CardTitle>To-Do List</CardTitle>
+                <CardTitle className="text-2xl">To-Do List</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleAddTodo} className="flex gap-2 mb-4">
