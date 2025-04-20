@@ -320,7 +320,7 @@ export default function Dashboard() {
               <label htmlFor="google-link" className="block text-sm font-medium text-gray-700 mb-2">
                 Google Calendar Link
               </label>
-              <Input id="google-link" value={googleLink} onChange={e => setGoogleLink(e.target.value)} placeholder="" />
+              <Input id="google-link" value={googleLink} onChange={e => setGoogleLink(e.target.value)} placeholder="https://calendar.google.com/calendar/ical/..." />
             </div>
             <div>
               <label htmlFor="canvas-link" className="block text-sm font-medium text-gray-700 mb-2">Canvas Link</label>
@@ -328,7 +328,7 @@ export default function Dashboard() {
                 id="canvas-link"
                 value={canvasLink}
                 onChange={e => setCanvasLink(e.target.value)}
-                placeholder="https://..."
+                placeholder="https://elearn.ucr.edu/feeds/calendars/..."
               />
             </div>
           </div>
