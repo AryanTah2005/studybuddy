@@ -1,15 +1,15 @@
 "use client";
 
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { MessageCircle, Plus, X } from "lucide-react";
-import { useState } from "react";
 import { ChatBot } from "@/components/ChatBot";
 import { CourseList } from "@/components/CourseList";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { MessageCircle, Plus, X } from "lucide-react";
+import { useState } from "react";
 
 interface Todo {
   id: string;
@@ -59,13 +59,13 @@ export default function Home() {
 
   const handleAddCourse = () => {
     if (!newCourseName.trim() || !newCourseDescription.trim()) return;
-    
+
     const newCourse = {
       id: Math.random().toString(),
       name: newCourseName,
       description: newCourseDescription,
     };
-    
+
     setCourses(prev => [...prev, newCourse]);
     setIsNewCourseOpen(false);
     setNewCourseName("");
@@ -74,19 +74,19 @@ export default function Home() {
 
   const handleAddEvent = () => {
     if (!date || !newEventTitle || !newEventTime) return;
-    
-    const dateStr = date.toISOString().split('T')[0];
+
+    const dateStr = date.toISOString().split("T")[0];
     const newEvent = {
       id: Math.random().toString(),
       title: newEventTitle,
       time: newEventTime,
     };
-    
+
     setEvents(prev => ({
       ...prev,
       [dateStr]: [...(prev[dateStr] || []), newEvent],
     }));
-    
+
     setNewEventTitle("");
     setNewEventTime("");
     setIsNewEventOpen(false);
@@ -95,7 +95,7 @@ export default function Home() {
   const handleAddTodo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTodo.trim()) return;
-    
+
     setTodos(prev => [...prev, {
       id: Math.random().toString(),
       text: newTodo,
@@ -105,16 +105,14 @@ export default function Home() {
   };
 
   const toggleTodo = (id: string) => {
-    setTodos(prev => prev.map(todo =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    ));
+    setTodos(prev => prev.map(todo => todo.id === id ? { ...todo, completed: !todo.completed } : todo));
   };
 
   const removeTodo = (id: string) => {
     setTodos(prev => prev.filter(todo => todo.id !== id));
   };
 
-  const selectedDateStr = date?.toISOString().split('T')[0];
+  const selectedDateStr = date?.toISOString().split("T")[0];
   const selectedDateEvents = selectedDateStr ? events[selectedDateStr] || [] : [];
 
   // Separate completed and pending todos
@@ -146,7 +144,7 @@ export default function Home() {
                   onSelect={setDate}
                   className="rounded-md border"
                 />
-                
+
                 <div className="mt-4">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="font-semibold">Events for {date?.toLocaleDateString()}</h3>
@@ -154,7 +152,7 @@ export default function Home() {
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   <div className="space-y-2">
                     {selectedDateEvents.map(event => (
                       <div key={event.id} className="flex items-center justify-between bg-muted p-2 rounded">
@@ -179,7 +177,7 @@ export default function Home() {
                   />
                   <Button type="submit" size="sm">Add</Button>
                 </form>
-                
+
                 {/* Pending Todos */}
                 <div className="space-y-2 mb-6">
                   <h4 className="text-sm font-medium text-muted-foreground mb-2">Pending Tasks</h4>

@@ -2,15 +2,7 @@
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
 import { sql } from "drizzle-orm";
-import {
-  index,
-  integer,
-  pgTableCreator,
-  timestamp,
-  varchar,
-  text,
-  uuid
-} from "drizzle-orm/pg-core";
+import { index, integer, json, pgTableCreator, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -18,38 +10,44 @@ import {
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
-export const createTable = pgTableCreator((name) => `notes-app_${name}`);
+export const createTable = pgTableCreator((name) => `study_tool_${name}`);
 
 export const posts = createTable(
-  "post",
+  "todo",
   {
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    name: varchar("name", { length: 256 }),
+    title: varchar("title", { length: 256 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
+      () => new Date(),
     ),
   },
   (example) => ({
-    nameIndex: index("name_idx").on(example.name),
-  })
+    nameIndex: index("name_idx").on(example.title),
+  }),
 );
 
 export const notes = createTable(
-  "notes",
+  "course",
   {
     record_id: integer("record_id").primaryKey().generatedByDefaultAsIdentity(),
-    note_id: uuid("note_id").notNull().defaultRandom(),
-    note_name: varchar("note_name", { length: 256 }),
-    note_content: text("note_content").default(sql`''`),
-    userId: varchar("user_id", { length: 256 }),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    note_id: uuid("course_id").notNull().defaultRandom(),
+    note_name: varchar("course_name", { length: 256 }),
+    note_content: text("course_desc").default(sql`''`),
+    user_id: varchar("user_id", { length: 256 }),
+    uploaded_files: json("uploaded_files").default(sql`'[]'`),
+    uploaded_files_count: integer("uploaded_files_count").default(0),
+    uploaded_files_size: integer("uploaded_files_size").default(0),
+    generated_files: json("generated_files").default(sql`'[]'`),
+    generated_files_count: integer("generated_files_count").default(0),
+    generated_files_size: integer("generated_files_size").default(0),
+    created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
+    updated_at: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date(),
     ),
   },
 );
