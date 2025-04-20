@@ -6,7 +6,6 @@ import { cache } from "react";
 
 import { type AppRouter, createCaller } from "@/server/api/root";
 import { createTRPCContext } from "@/server/api/trpc";
-import { auth } from "@clerk/nextjs/server";
 import { createQueryClient } from "./query-client";
 
 /**

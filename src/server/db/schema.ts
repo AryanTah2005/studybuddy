@@ -38,6 +38,7 @@ export const courses = createTable(
     course_id: uuid("course_id").notNull().defaultRandom(),
     course_name: varchar("course_name", { length: 256 }),
     course_desc: text("course_desc").default(sql`''`),
+    is_active: boolean("is_active").default(true),
     user_id: varchar("user_id", { length: 256 }),
     uploaded_files: json("uploaded_files").default(sql`'[]'`),
     uploaded_files_count: integer("uploaded_files_count").default(0),

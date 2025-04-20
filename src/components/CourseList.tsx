@@ -1,73 +1,82 @@
-"use client"; 
-
-import { useState } from "react";
-import Link from "next/link";
+import { api } from "@/trpc/react";
+import { Archive, Trash } from "lucide-react";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
 interface Course {
-  id: string;
-  name: string;
-  description: string;
-  files: string[];
+  course_id: string | null;
+  course_name: string | null;
+  course_desc: string | null;
 }
 
 interface CourseListProps {
   courses: Course[];
 }
 
-export function CourseList({ courses }: CourseListProps) {
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+const CourseCard = ({ course }: { course: Course }) => {
+  const utils = api.useUtils();
+  const dropCourse = api.course.dropCourse.useMutation({
+    onMutate: (course) => {
+      utils.course.getCourses.cancel();
 
-  const handleClose = () => {
-    setSelectedCourse(null);
-  };
+      const previousCourses = utils.course.getCourses.getData();
+
+      if (previousCourses) {
+        const updatedCourses = previousCourses.filter((c: Course) => c.course_id !== course.course_id);
+        utils.course.getCourses.setData(undefined, updatedCourses);
+      }
+
+      return { previousCourses };
+    },
+
+    onSuccess: () => {
+      utils.course.getCourses.invalidate();
+    },
+  });
+  return (
+    <Card className="w-full h-52 flex flex-col justify-between shadow-none group/card">
+      <CardHeader className="flex items-end">
+        <div className="flex gap-4">
+          <Trash
+            className=" h-5 w-5 text-gray-500 cursor-pointer group-hover/card:opacity-100 opacity-0 transition-all ease-in-out"
+            onClick={() => {
+              if (!course.course_id) return;
+              dropCourse.mutate({ course_id: course.course_id });
+            }}
+          />
+          <Archive
+            className=" h-5 w-5 text-gray-500 cursor-pointer group-hover/card:opacity-100 opacity-0 transition-all ease-in-out"
+            onClick={() => {
+              if (!course.course_id) return;
+              dropCourse.mutate({ course_id: course.course_id });
+            }}
+          />
+        </div>
+      </CardHeader>
+      <CardFooter className="flex flex-col w-full items-start justify-end">
+        <CardTitle className="text-2xl">{course.course_name}</CardTitle>
+        <CardDescription className="w-full">
+          <p className="line-clamp-2">
+            {course.course_desc}
+          </p>
+        </CardDescription>
+      </CardFooter>
+    </Card>
+  );
+};
+export function CourseList({ courses }: CourseListProps) {
+  const { data: courseList, isLoading } = api.course.getCourses.useQuery();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!courseList || courseList.length === 0) {
+    return <div>No courses available</div>;
+  }
 
   return (
-    <div className="gap-4 grid grid-cols-3 row-span-2">
-      {courses.map((course) => (
-        <div
-          key={course.id}
-          className="p-4 bg-card rounded-lg border hover:shadow-md transition-shadow"
-          onClick={() => setSelectedCourse(course)}
-        >
-          <h3 className="text-lg font-semibold">{course.name}</h3>
-          <p className="text-muted-foreground">{course.description}</p>
-        </div>
-      ))}
-      {selectedCourse && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg relative">
-            <h2 className="text-xl mb-2">{selectedCourse.name}</h2>
-            <p className="text-muted-foreground mb-4">
-              {selectedCourse.description}
-            </p>
-            <div>
-              {selectedCourse.files?.length ? (
-                <ul className="text-2xl gap-2">
-                  <div className="text-2xl">All Files</div>
-                  {selectedCourse.files.map((file, index) => (
-                    <li key={index}>
-                      <Link href={file}
-                        target = "blank"
-                      />
-                      {file}</li>
-                  ))}
-                </ul>
-              ) : (
-                <ul>No Files Added</ul>
-              )}
-            </div>
-            <button className="text-gray-600 px-2 rounded-lg bg-green-600 hover:text-black text-lg">
-              Add File
-            </button>
-            <button
-              onClick={handleClose}
-              className="absolute top-2 right-2 text-gray-600 hover:text-black text-lg"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {courseList.map((course) => <CourseCard key={course.course_id} course={course} />)}
     </div>
   );
 }

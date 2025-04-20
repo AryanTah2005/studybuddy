@@ -18,6 +18,13 @@ export default function RootLayout({
   return (
     <Providers>
       <html lang="en" className={`${GeistSans.variable}`}>
+        <head>
+          <script
+            crossOrigin="anonymous"
+            src="//unpkg.com/react-scan/dist/auto.global.js"
+          />
+          {/* rest of your scripts go under */}
+        </head>
         <body>
           <Navbar />
           {children}
