@@ -24,23 +24,64 @@ export function ChatBot({ open, onClose }: ChatBotProps) {
       sender: "bot",
     },
   ]);
-  const [input, setInput] = useState("");
 
-  const handleSend = () => {
+  const [input, setInput] = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const streamBotResponse = (fullText: string) => {
+    const words = fullText.split(" ");
+    let currentText = "";
+    let wordIndex = 0;
+
+    setStreaming(true);
+
+    const interval = setInterval(() => {
+      if (wordIndex < words.length) {
+        currentText += (wordIndex === 0 ? "" : " ") + words[wordIndex];
+        setMessages((prev) => {
+          // Remove last bot message if it's streaming
+          const newMessages = [...prev];
+          const lastMsg = newMessages[newMessages.length - 1];
+
+          if (lastMsg?.sender === "bot") {
+            newMessages[newMessages.length - 1] = { text: currentText, sender: "bot" };
+          } else {
+            newMessages.push({ text: currentText, sender: "bot" });
+          }
+
+          return newMessages;
+        });
+
+        wordIndex++;
+      } else {
+        clearInterval(interval);
+        setStreaming(false);
+      }
+    }, 50); // speed: smaller is faster
+  };
+
+  const handleSend = async () => {
     if (!input.trim()) return;
 
-    setMessages((prev) => [...prev, { text: input, sender: "user" }]);
-    // Add bot response (this would be replaced with actual AI integration)
-    setTimeout(() => {
+    const userMessage = { text: input, sender: "user" };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
+      });
+
+      const data = await res.json();
+      streamBotResponse(data.response);
+    } catch (err) {
+      console.error(err);
       setMessages((prev) => [
         ...prev,
-        {
-          text: "I'm here to help! What would you like to know about your studies?",
-          sender: "bot",
-        },
+        { text: "Oops! Something went wrong.", sender: "bot" },
       ]);
-    }, 1000);
-    setInput("");
+    }
   };
 
   return (
@@ -86,6 +127,7 @@ export function ChatBot({ open, onClose }: ChatBotProps) {
               placeholder="Type your message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              disabled={streaming}
             />
             <Button type="submit" size="icon">
               <Send className="h-4 w-4" />
