@@ -1,42 +1,37 @@
 import React from "react";
+import { Button } from "./ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 const TestReview = () => {
   return (
     <div className="border p-4  rounded-lg shadow-md flex flex-row gap-4 items-center justify-center">
-      <div className="border px-4 rounded-lg shadow-md">
-        <select className="">
-          <option value="" disabled selected>Courses</option>
-          <option value="option1">Option 1</option>
-          <option value="option2">Option 2</option>
-          <option value="option3">Option 3</option>
-        </select>
-      </div>
-
-      {/* Row 2 */}
-      <div className="border px-4  rounded-lg shadow-md ">
-        <select className="">
-          <option value="" disabled selected>Course Files</option>
-          <option value="option1">Option 1</option>
-          <option value="option2">Option 2</option>
-          <option value="option3">Option 3</option>
-        </select>
-      </div>
-
-      {/* Row 3 */}
-      <div className="border px-4  rounded-lg shadow-md">
-        <select className="">
-          <option value="" disabled selected>It matters</option>
-          <option value="option1">Study Guide</option>
-          <option value="option2">Slides</option>
-          <option value="option3">Mock Test</option>
-        </select>
-      </div>
-
-      <div className="">
-        <button className="bg-green-600 text-white px-4 rounded hover:bg-blue-600">
-          Generate
-        </button>
-      </div>
+      <Select>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Course" />
+        </SelectTrigger>
+        <SelectContent>
+          {["CS50", "CS50W", "CS50AI"].map((item) => (
+            <SelectItem key={item} value={item}>
+              {item}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Content Type" />
+        </SelectTrigger>
+        <SelectContent>
+          {["Study Guide", "Practice Test", "Slides"].map((item) => (
+            <SelectItem key={item} value={item}>
+              {item}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Button>
+        Generate
+      </Button>
     </div>
   );
 };
