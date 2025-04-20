@@ -7,12 +7,6 @@ export const Navbar = () => {
     <nav className="p-4 ">
       <ul className="flex justify-end *:px-10">
         <li>
-          <Link href="/">Home</Link>
-        </li>
-        <li>
-          <Link href="/gallery">Gallery</Link>
-        </li>
-        <li>
         <UserButton />
         </li>
       </ul>
