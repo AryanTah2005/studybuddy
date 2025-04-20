@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SignInButton, UserButton, UserProfile } from "@clerk/nextjs";
 import { MessageCircle, Settings, X } from "lucide-react";
+import { useEffect } from "react"; // Top of your file
 import { useState } from "react";
 
 interface Todo {
@@ -24,6 +25,7 @@ interface Event {
   id: string;
   title: string;
   time: string;
+  source?: string;
 }
 
 interface Course {
@@ -47,7 +49,49 @@ export default function Dashboard() {
     { id: "2", text: "Complete physics homework", completed: false },
   ]);
   const [events, setEvents] = useState<Record<string, Event[]>>({});
+  useEffect(() => {
+    if ((!googleLink || googleLink.trim() === "") && (!canvasLink || canvasLink.trim() === "")) {
+      return;
+    }
 
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch("/api/fetchIcs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ google: googleLink, canvas: canvasLink }),
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error("Server error: " + text);
+        }
+
+        // After fetching:
+        const data = await res.json();
+
+        // Build event date mapping like: { "2024-06-12": [event, ...], ... }
+        const byDate: Record<string, Event[]> = {};
+        for (const event of data.events) {
+          const iso = event.time;
+          const dateKey = iso.split("T")[0];
+          const timeObj = new Date(iso);
+          const timePart = timeObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }); // "hh:mm AM/PM"
+          if (!byDate[dateKey]) byDate[dateKey] = [];
+          byDate[dateKey].push({
+            id: event.id,
+            title: event.title,
+            time: timePart, // formatted "hh:mm AM/PM"
+            source: event.source, // keep source info!
+          });
+        }
+        setEvents(byDate);
+      } catch (error) {
+        console.error("Failed to fetch/parsing events:", error);
+      }
+    };
+
+    fetchEvents();
+  }, [googleLink, canvasLink]);
   const handleAddTodo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTodo.trim()) return;
@@ -69,9 +113,6 @@ export default function Dashboard() {
   const completedTodos = todos.filter(todo => todo.completed);
 
   const saveSettings = () => {
-    // persist settings here (e.g., localStorage)
-    console.log("Saved Google Calendar:", googleLink);
-    console.log("Saved Canvas Link:", canvasLink);
     setIsSettingsOpen(false);
   };
 
@@ -112,10 +153,10 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-6 min-w-0">
-            <Card className="w-full min-w-0 relative">
+            <Card className="w-full min-w-0 relative shadow-none">
               <CardHeader>
                 <div className="flex justify-between items-center w-full">
-                  <CardTitle>Calendar</CardTitle>
+                  <CardTitle className="text-2xl">Calendar</CardTitle>
                   <Button variant="ghost" onClick={() => setIsSettingsOpen(true)}>
                     <Settings className="h-5 w-5" />
                   </Button>
@@ -136,8 +177,29 @@ export default function Dashboard() {
                   </div>
                   <div className="space-y-2">
                     {selectedDateEvents.map(event => (
-                      <div key={event.id} className="flex items-center justify-between bg-muted p-2 rounded">
-                        <span>{event.time} - {event.title}</span>
+                      <div
+                        key={event.id}
+                        className={`
+      flex items-center justify-between p-2 rounded
+      ${
+                          event.source === "canvas"
+                            ? "bg-red-100 text-red-700"
+                            : event.source === "google"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-muted"
+                        }
+    `}
+                      >
+                        <span>
+                          <span className="font-bold">{event.time}</span> - {event.title}
+                          {/* optional source color tag */}
+                          {event.source === "canvas"
+                            ? <span className="ml-2 text-xs text-red-500">(Canvas)</span>
+                            : null}
+                          {event.source === "google"
+                            ? <span className="ml-2 text-xs text-blue-500">(Google)</span>
+                            : null}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -147,7 +209,7 @@ export default function Dashboard() {
 
             <Card className="min-w-0">
               <CardHeader>
-                <CardTitle>To-Do List</CardTitle>
+                <CardTitle className="text-2xl">To-Do List</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleAddTodo} className="flex gap-2 mb-4">
